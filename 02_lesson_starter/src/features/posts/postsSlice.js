@@ -33,12 +33,13 @@ const postsSlice = createSlice({
       },
       //maybe this is the function override thing
       //prepare call back, user at component can use dispatch(postAdded(title, content))
-      prepare(title, content) {
+      prepare(title, content, userId) {
         return {
           payload: {
             id: nanoid(),
             title,
             content,
+            userId,
           },
         };
       },
@@ -46,7 +47,7 @@ const postsSlice = createSlice({
   },
 });
 
-//*make a selector so that we can change in this file, easier to manage
+//*make a custom selector so that we can change in this file, easier to manage
 export const selectAllPosts = (state) => state.posts;
 
 export const { postAdded } = postsSlice.actions;
