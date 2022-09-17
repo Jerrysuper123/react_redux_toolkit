@@ -27,8 +27,21 @@ const postsSlice = createSlice({
 
     //above is old way of writing, we can write
     //1, reducer and callback function together
-    postAdded(state, action) {
-      state.push(action.payload);
+    postAdded: {
+      reducer(state, action) {
+        state.push(action.payload);
+      },
+      //maybe this is the function override thing
+      //prepare call back, user at component can use dispatch(postAdded(title, content))
+      prepare(title, content) {
+        return {
+          payload: {
+            id: nanoid(),
+            title,
+            content,
+          },
+        };
+      },
     },
   },
 });

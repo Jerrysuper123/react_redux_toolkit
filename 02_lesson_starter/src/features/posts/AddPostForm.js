@@ -16,13 +16,8 @@ function AddPostForm() {
   //*onsave postclick
   const onSavePostClicked = () => {
     if (title && content) {
-      dispatch(
-        postAdded({
-          id: nanoid(),
-          title,
-          content,
-        })
-      );
+      //use prepare callback function
+      dispatch(postAdded(title, content));
     }
     setTitle("");
     setContent("");
