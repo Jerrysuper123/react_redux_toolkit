@@ -28,6 +28,39 @@ export const addNewPost = createAsyncThunk(
   }
 );
 
+export const updatePost = createAsyncThunk(
+  "posts/updatePost",
+  async (updatedPost) => {
+    const { id } = updatePost;
+    try {
+      const response = await axios.put(`${POSTS_URL}/${id}`, updatedPost);
+      return response.data;
+    } catch (err) {
+      //return err.message;
+      //*we are returning the updated post back, so that we can merge with the state.posts
+      //otherwise, we will receive error, because api does not allow us to update the api
+      return updatedPost; // only for testing Redux!
+    }
+  }
+);
+
+export const deletePost = createAsyncThunk(
+  "posts/deletePost",
+  async (initialPost) => {
+    const { id } = initialPost;
+    try {
+      const response = await axios.delete(`${POSTS_URL}/${id}`);
+      // *json placeholder does not send back deleted post
+      //*so we build this in place
+      if (response?.status === 200) return initialPost;
+      //*if there is no response or other status, we return the statusText
+      return `${response?.status}: ${response?.statusText}`;
+    } catch (err) {
+      return err.message;
+    }
+  }
+);
+
 const postsSlice = createSlice({
   name: "posts",
   initialState,
@@ -119,6 +152,28 @@ const postsSlice = createSlice({
         console.log(action.payload);
         //*push in the new record created
         state.posts.push(action.payload);
+      })
+      .addCase(updatePost.fulfilled, (state, action) => {
+        if (!action.payload?.id) {
+          console.log("Update could not complete");
+          console.log(action.payload);
+          return;
+        }
+        const { id } = action.payload;
+        action.payload.date = new Date().toISOString();
+        const posts = state.posts.filter((post) => post.id !== id);
+        state.posts = [...posts, action.payload];
+      })
+      .addCase(deletePost.fulfilled, (state, action) => {
+        if (!action.payload?.id) {
+          console.log("Delete could not complete");
+          console.log(action.payload);
+          return;
+        }
+        const { id } = action.payload;
+        //*filter out the deleted post
+        const posts = state.posts.filter((post) => post.id !== id);
+        state.posts = posts;
       });
   },
 });
@@ -128,6 +183,10 @@ const postsSlice = createSlice({
 export const selectAllPosts = (state) => state.posts.posts;
 export const getPostsStatus = (state) => state.posts.status;
 export const getPostsError = (state) => state.posts.error;
+
+//*retrieve by postId
+export const selectPostById = (state, postId) =>
+  state.posts.posts.find((post) => post.id === postId);
 
 export const { postAdded, reactionAdded } = postsSlice.actions;
 
